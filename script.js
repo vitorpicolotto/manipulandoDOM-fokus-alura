@@ -6,13 +6,17 @@ const banner = document.querySelector('.app__image')
 const titulo = document.querySelector('.app__title')
 const botoes = document.querySelectorAll('.app__card-button')
 const musicaFocoInput = document.querySelector('#alternar-musica')
-const musica = new Audio('/sons/luna-rise-part-one.mp3')
 const startPauseBt = document.querySelector('#start-pause')
+const iniciarOuPausarBt = document.querySelector('#start-pause span')
+const iniciarImagem = document.querySelector('.app__card-primary-butto-icon')
+const tempoNaTela = document.querySelector('#timer')
+
+const musica = new Audio('/sons/luna-rise-part-one.mp3')
 const audioPause = new Audio('/sons/pause.mp3')
 const audioPlay = new Audio('/sons/play.wav')
 const audioTempoFinalizado = new Audio('/sons/beep.mp3')
 
-let tempoDecorridoEmSegundos = 5
+let tempoDecorridoEmSegundos = 1500 //em segundos
 let intervaloId = null
 
 musica.loop = true
@@ -27,6 +31,7 @@ musicaFocoInput.addEventListener('change', () => {
 //'change' por se tratar de um checkbox. pela música ter apenas 6 minutos, criamos um loop para ela ficar repetindo até durarem os cronômetros.
 
 focoBt.addEventListener('click', () => {
+    tempoDecorridoEmSegundos = 1500
    alterarContexto('foco')
    focoBt.classList.add('active')
 })
@@ -36,16 +41,19 @@ focoBt.addEventListener('click', () => {
 //utilizamos o método classList.add para selecionar uma classe e adicionar a classe active quando houver o evento de click
 
 curtoBt.addEventListener('click', () => {
+    tempoDecorridoEmSegundos = 300
     alterarContexto('descanso-curto')
     curtoBt.classList.add('active')
 })
 
 longoBt.addEventListener('click', () => {
+    tempoDecorridoEmSegundos = 900
     alterarContexto('descanso-longo')
     longoBt.classList.add('active')
 })
 
 function alterarContexto (contexto) {
+    mostrarTempo()
     botoes.forEach(function (contexto){
         contexto.classList.remove('active')
     })
@@ -78,6 +86,7 @@ const contagemRegressiva = () => {
         return
     }
     tempoDecorridoEmSegundos -= 1
+    mostrarTempo()
 }
 startPauseBt.addEventListener('click', iniciarOuPausar)
 
@@ -89,9 +98,21 @@ function iniciarOuPausar(){
     }
     audioPlay.play();
     intervaloId = setInterval (contagemRegressiva, 1000) //sempre recebe dois parâmetros - o que você quer que aconteça (nesse caso a função onde o vai diminuir 1) e o tempo em que vai ser executado em mili segundo (1000ms = 1s)
+    iniciarOuPausarBt.textContent = "Pausar"
+    iniciarImagem.setAttribute ('src', '/imagens/pause.png')
 }
 
 function zerar(){
     clearInterval(intervaloId)
+    iniciarOuPausarBt.textContent = "Começar"
+    iniciarImagem.setAttribute ('src', '/imagens/play_arrow.png')
     intervaloId=null
 }
+
+function mostrarTempo (){
+    const tempo = new Date(tempoDecorridoEmSegundos * 1000)
+    const tempoFormatado = tempo.toLocaleTimeString('pt-br', {minute: '2-digit', second: '2-digit'})
+    tempoNaTela.innerHTML = `${tempoFormatado}`
+}
+
+mostrarTempo()
