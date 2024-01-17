@@ -2,11 +2,13 @@
 
 const btnAdcionarTarefa = document.querySelector('.app__button--add-task')
 const btnCancelar = document.querySelector('.app__form-footer__button--cancel')
+const btnRemoverConcluidas = document.querySelector('#btn-remover-concluidas')
+const btnRemoverTodas = document.querySelector('#btn-remover-todas')
 const formAdcionarTarefa = document.querySelector('.app__form-add-task')
 const textArea = document.querySelector('.app__form-textarea')
 const ulTarefas = document.querySelector('.app__section-task-list')
 const paragrafoDescricaoTarefa = document.querySelector('.app__section-active-task-description')
-const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [] 
+let tarefas = JSON.parse(localStorage.getItem('tarefas')) || [] 
 //ao carregar a página, vai pegar na localStorage a lista de tarefas e, o resultado disso, vai ser passado para o JSON.parse (porque o localStorage só lida com strings). parse é o contrário do stringify: pega a string e se ela for um JSON formatado, vai conseguir transformar isso. Se houver algum problema, vai retornar erro no sonsole.
 //se for a primeira vez que a página foi carregada, não tem nada no localStorage. Então usamos a programação devensiva []. Se o localStorage retorna nulo, o nulo não quebra o JSON.parse, mas não teremos um array para fazer o push(). Se o retorno for algo que não é um array, ou seja, um undefined ou um null, adicionamos um "ou" || e colocamos um array vazio. Se o resultado for passado pelo JSON.parse(), ótimo, mas se não der certo, vai cair no "ou" e é colocado um array vazio. Então não precisamos nos preocupar se tem ou não tem tarefas.
 let tarefaSelecionada = null
@@ -56,8 +58,12 @@ function criarElementoTarefa(tarefa) {
     li.append(paragrafo)
     li.append(botao)
 
-    li.onclick = () => {
-        document.querySelectorAll('.app__section-task-list-item-active')
+    if (tarefa.completa){
+        li.classList.add('app__section-task-list-item-complete');
+        botao.setAttribute('disabled', 'disabled');
+    }  else {
+        li.onclick = () => {
+            document.querySelectorAll('.app__section-task-list-item-active')
         .forEach(elemento => {
             elemento.classList.remove('app__section-task-list-item-active')
         })
@@ -72,6 +78,8 @@ function criarElementoTarefa(tarefa) {
         paragrafoDescricaoTarefa.textContent = tarefa.descricao
        
         li.classList.add('app__section-task-list-item-active')
+        }
+
     }
 
     return li
@@ -116,6 +124,23 @@ document.addEventListener('FocoFinalizado', () =>{
         liTarefaSelecionada.classList.remove('app__section-task-list-item-active');
         liTarefaSelecionada.classList.add('app__section-task-list-item-complete');
         liTarefaSelecionada.querySelector('button').setAttribute('disabled', 'disabled');
+        tarefaSelecionada.completa = true
+        atualizarTarefas()
     }
 })
 
+const removerTarefas = (somenteCompletas) => {
+    let seletor = ".app__section-task-list-item"
+    if (somenteCompletas) {
+        seletor = ".app__section-task-list-item-complete"
+    }
+    //const seletor = somenteCompletas ? ".app__section-task-list-item-complete" : ".app__section-task-list-item" //booleanos ternários: se é somente a primeira classe (completas) = true, se não usa a segunda classe!
+    document.querySelectorAll(seletor).forEach(elemento => {
+        elemento.remove()
+    })
+    tarefas = somenteCompletas ? tarefas.filter(tarefa => !tarefa.completa) : [] //filtrar tarefas não completas, pois queremos remover apenas as completas
+    atualizarTarefas()
+}
+
+btnRemoverConcluidas.onclick = () => removerTarefas(true)
+btnRemoverTodas.onclick = () => removerTarefas(false)
