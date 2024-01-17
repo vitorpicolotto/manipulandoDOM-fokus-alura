@@ -1,12 +1,17 @@
 // encontrar o botão de adicionar tarefa
 
 const btnAdcionarTarefa = document.querySelector('.app__button--add-task')
+const btnCancelar = document.querySelector('.app__form-footer__button--cancel')
 const formAdcionarTarefa = document.querySelector('.app__form-add-task')
 const textArea = document.querySelector('.app__form-textarea')
 const ulTarefas = document.querySelector('.app__section-task-list')
 const tarefas = JSON.parse(localStorage.getItem('tarefas')) || [] 
 //ao carregar a página, vai pegar na localStorage a lista de tarefas e, o resultado disso, vai ser passado para o JSON.parse (porque o localStorage só lida com strings). parse é o contrário do stringify: pega a string e se ela for um JSON formatado, vai conseguir transformar isso. Se houver algum problema, vai retornar erro no sonsole.
 //se for a primeira vez que a página foi carregada, não tem nada no localStorage. Então usamos a programação devensiva []. Se o localStorage retorna nulo, o nulo não quebra o JSON.parse, mas não teremos um array para fazer o push(). Se o retorno for algo que não é um array, ou seja, um undefined ou um null, adicionamos um "ou" || e colocamos um array vazio. Se o resultado for passado pelo JSON.parse(), ótimo, mas se não der certo, vai cair no "ou" e é colocado um array vazio. Então não precisamos nos preocupar se tem ou não tem tarefas.
+
+function atualizarTarefas() {
+    localStorage.setItem('tarefas', JSON.stringify(tarefas))
+}
 
 //criar uma função para que receba uma tarefa e saiba devolver um HTML (que representa essa tarefa)
 function criarElementoTarefa(tarefa) {
@@ -27,6 +32,19 @@ function criarElementoTarefa(tarefa) {
 
     const botao = document.createElement('button')
     botao.classList.add('app_button-edit')
+
+    botao.onclick = () => {
+        //debugger
+        const novaDescricao = prompt("Qual é o novo nome da tarefa?")
+        console.log('Nova descrição da tarefa: ', novaDescricao)
+        if (novaDescricao){
+            paragrafo.textContent = novaDescricao
+            tarefa.descricao = novaDescricao
+            atualizarTarefas()
+        }
+        
+    }
+
     const imagemBotao = document.createElement('img')
     imagemBotao.setAttribute('src', '/imagens/edit.png')
 
@@ -43,6 +61,8 @@ btnAdcionarTarefa.addEventListener('click', () => {
 } )
 //utilizando o .toggle, fazemos a alternância da classe 'hidden', que esconde o formulário. Então todas as vezes que clicar no botão de adicionar tarefa, vai exibir o formulário que estava "escondido".
 
+
+
 formAdcionarTarefa.addEventListener('submit', (evento) => {
     evento.preventDefault();
     const tarefa = {
@@ -51,7 +71,7 @@ formAdcionarTarefa.addEventListener('submit', (evento) => {
     tarefas.push(tarefa)
     const elementoTarefa = criarElementoTarefa(tarefa)
     ulTarefas.append(elementoTarefa)
-    localStorage.setItem('tarefas', JSON.stringify(tarefas))
+    atualizarTarefas()
     textArea.value = ''
     formAdcionarTarefa.classList.add('hidden')
 })
@@ -62,4 +82,13 @@ tarefas.forEach(tarefa => {
     const elementoTarefa = criarElementoTarefa(tarefa)
     ulTarefas.append(elementoTarefa)
 });
+
+//Cancelar a tarefa
+
+const limparFormulario = () => {
+    textArea.value = ""
+    formAdcionarTarefa.classList.add('hidden');
+}
+
+btnCancelar.addEventListener('click', limparFormulario)
 
